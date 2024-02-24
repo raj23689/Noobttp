@@ -117,7 +117,7 @@ class HTTPServer(TCPServer):
         if not path:
             # If path is empty, that means user is at the homepage
             # so just serve index.html
-            path = "index.html"
+            path = "htdocs/index.html"
 
         if os.path.exists(path) and not os.path.isdir(path):  # don't serve directories
             response_line = self.response_line(200)
