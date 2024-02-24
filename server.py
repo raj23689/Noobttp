@@ -68,3 +68,28 @@ class HTTPServer(TCPServer):
 
         response = handler(request)
         return response
+
+    def response_line(self, status_code):
+        """Returns response line (as bytes)"""
+        reason = self.status_codes.get(status_code, "Unknown Status Code")
+        response_line = "HTTP/1.1 %s %s\r\n" % (status_code, reason)
+
+        return response_line.encode()
+
+    def response_headers(self, extra_headers=None):
+        """Returns headers (as bytes).
+
+        The `extra_headers` can be a dict for sending
+        extra headers with the current response
+        """
+        headers_copy = self.headers.copy()  # make a local copy of headers
+
+        if extra_headers:
+            headers_copy.update(extra_headers)
+
+        headers = ""
+
+        for h in headers_copy:
+            headers += "%s: %s\r\n" % (h, headers_copy[h])
+
+        return headers.encode()  # convert str to bytes
