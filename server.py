@@ -1,6 +1,7 @@
 import socket
 import os
 import mimetypes
+import json
 
 
 class TCPServer:
@@ -142,3 +143,52 @@ class HTTPServer(TCPServer):
         )
 
         return response
+
+    def handle_POST(self, request):
+        """Handler for POST HTTP method"""
+
+        # Access the request body to get POST data
+        post_data = request.body.decode("utf-8")
+
+        try:
+            # Try to parse the POST data as JSON
+            json_data = json.loads(post_data)
+
+            # Process and handle the json_data as needed
+            response_body = f"Received JSON data: {json_data}"
+
+            content_type = "application/json"
+        except json.JSONDecodeError:
+            # Handle JSON decoding error
+            # Assume it's HTML form data in this case
+            response_body = f"Received HTML form data: {post_data}"
+
+            content_type = "text/html"
+
+        response_line = self.response_line(200)
+        extra_headers = {"Content-Type": content_type}
+        response_headers = self.response_headers(extra_headers)
+
+        blank_line = b"\r\n"
+
+        if isinstance(response_body, str):
+            response_body = response_body.encode()
+
+        response = b"".join(
+            [response_line, response_headers, blank_line, response_body]
+        )
+
+        return response
+
+    def HTTP_501_handler(self, request):
+        """Returns 501 HTTP response if the requested method hasn't been implemented."""
+
+        response_line = self.response_line(status_code=501)
+
+        response_headers = self.response_headers()
+
+        blank_line = b"\r\n"
+
+        response_body = b"<h1>501 Not Implemented</h1>"
+
+        return b"".join([response_line, response_headers, blank_line, response_body])
