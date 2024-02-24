@@ -192,3 +192,57 @@ class HTTPServer(TCPServer):
         response_body = b"<h1>501 Not Implemented</h1>"
 
         return b"".join([response_line, response_headers, blank_line, response_body])
+
+
+class HTTPRequest:
+    """Parser for HTTP requests.
+
+    It takes raw data and extracts meaningful information about the incoming request.
+
+    Instances of this class have the following attributes:
+
+        `self.method`: The current HTTP request method sent by the client (string)
+        `self.uri`: URI for the current request (string)
+        `self.http_version`: HTTP version used by the client (string)
+        `self.headers`: Dictionary containing the HTTP headers
+        `self.body`: The body of the HTTP request (bytes)
+    """
+
+    def __init__(self, data):
+        self.method = None
+        self.uri = None
+        self.http_version = "1.1"
+        self.headers = {}
+        self.body = b""
+
+        self.parse(data)
+
+    def parse(self, data):
+        lines = data.split(b"\r\n")
+
+        request_line = lines[0]
+        words = request_line.split(b" ")
+
+        self.method = words[0].decode()
+
+        if len(words) > 1:
+            self.uri = words[1].decode()
+
+        if len(words) > 2:
+            self.http_version = words[2]
+
+        # Parse headers
+        for line in lines[1:]:
+            if not line:
+                break
+            header, value = line.split(b":", 1)
+            self.headers[header.strip().decode()] = value.strip()
+
+        # Parse request body
+        body_start = data.find(b"\r\n\r\n") + 4
+        self.body = data[body_start:]
+
+
+if __name__ == "__main__":
+    server = HTTPServer()
+    server.start()
