@@ -1,3 +1,6 @@
+import socket
+
+
 class TCPServer:
     """Base server class for handling TCP connections.
     The HTTP server will inherit from this class.
