@@ -24,7 +24,7 @@ class TCPServer:
             conn, addr = s.accept()
             print("Connected by", addr)
 
-            # For the sake of this tutorial,
+            # For the sake of this,
             # we're reading just the first 1024 bytes sent by the client.
             data = conn.recv(1024)
 
@@ -38,3 +38,33 @@ class TCPServer:
         Override this in subclass.
         """
         return data
+
+
+class HTTPServer(TCPServer):
+    """The actual HTTP server class."""
+
+    headers = {
+        "Server": "NoobServer",
+        "Content-Type": "text/html",
+    }
+
+    status_codes = {
+        200: "OK",
+        404: "Not Found",
+        501: "Not Implemented",
+    }
+
+    def handle_request(self, data):
+        """Handles incoming requests"""
+
+        request = HTTPRequest(data)  # Get a parsed HTTP request
+
+        try:
+            # Call the corresponding handler method for the current
+            # request's method
+            handler = getattr(self, "handle_%s" % request.method)
+        except AttributeError:
+            handler = self.HTTP_501_handler
+
+        response = handler(request)
+        return response
