@@ -1,4 +1,6 @@
 import socket
+import os
+import mimetypes
 
 
 class TCPServer:
@@ -93,3 +95,50 @@ class HTTPServer(TCPServer):
             headers += "%s: %s\r\n" % (h, headers_copy[h])
 
         return headers.encode()  # convert str to bytes
+
+    def handle_OPTIONS(self, request):
+        """Handler for OPTIONS HTTP method"""
+
+        response_line = self.response_line(200)
+
+        extra_headers = {"Allow": "OPTIONS, GET"}
+        response_headers = self.response_headers(extra_headers)
+
+        blank_line = b"\r\n"
+
+        return b"".join([response_line, response_headers, blank_line])
+
+    def handle_GET(self, request):
+        """Handler for GET HTTP method"""
+
+        path = request.uri.strip("/")  # remove slash from URI
+
+        if not path:
+            # If path is empty, that means user is at the homepage
+            # so just serve index.html
+            path = "index.html"
+
+        if os.path.exists(path) and not os.path.isdir(path):  # don't serve directories
+            response_line = self.response_line(200)
+
+            # find out a file's MIME type
+            # if nothing is found, just send `text/html`
+            content_type = mimetypes.guess_type(path)[0] or "text/html"
+
+            extra_headers = {"Content-Type": content_type}
+            response_headers = self.response_headers(extra_headers)
+
+            with open(path, "rb") as f:
+                response_body = f.read()
+        else:
+            response_line = self.response_line(404)
+            response_headers = self.response_headers()
+            response_body = b"<h1>404 Not Found</h1>"
+
+        blank_line = b"\r\n"
+
+        response = b"".join(
+            [response_line, response_headers, blank_line, response_body]
+        )
+
+        return response
