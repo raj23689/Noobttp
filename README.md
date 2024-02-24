@@ -3,7 +3,7 @@ A minimalistic HTTP server implemented in python It is designed to be lightweigh
 
 
 > [!CAUTION]
-> This is not a **PRODUCTION** server. Proceed with caution, be ready for Negative potential consequences.
+> This is not a **PRODUCTION** ready server. Proceed with caution, be ready for Negative potential consequences.
 
 ## Features
 
